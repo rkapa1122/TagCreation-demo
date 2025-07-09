@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="231a7f42-b2b3-4979-a0fc-1ea0397bfa28" >
+		<http:listener-connection host="0.0.0.0" port="8089" />
+	</http:listener-config>
+	<flow name="hello-worldFlow" doc:id="d426b8cf-7789-40e7-993f-4abc74d3a4d5" >
+		<http:listener doc:name="Listener" doc:id="00ce8d3d-1a92-4a4c-ac23-a16bdc224a10" config-ref="HTTP_Listener_config" path="/test"/>
+		<logger level="INFO" doc:name="Logger" doc:id="74a37713-4fd7-40c7-a947-4d6fa9974dd0" message='"HEllloooooooooooooo"'/>
+		<logger level="INFO" doc:name="Logger" doc:id="74a37713-4fd7-40c7-a947-4d6fa9974dd0" message='"HEllloooooooooooooo"'/>
+		<logger level="INFO" doc:name="Logger" doc:id="74a37713-4fd7-40c7-a947-4d6fa9974dd0" message='"HEllloooooooooooooo"'/>
+	</flow>
+</mule>
