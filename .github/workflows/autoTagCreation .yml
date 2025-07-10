@@ -1,0 +1,65 @@
+name: Auto Tag or Bump Minor Version
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  tag-or-bump:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Install xmllint
+        run: sudo apt-get update && sudo apt-get install -y libxml2-utils
+
+      - name: Set up Git config
+        run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
+      - name: Determine version and optionally bump
+        id: version
+        run: |
+          VERSION=$(xmllint --xpath "/*[local-name()='project']/*[local-name()='version']/text()" pom.xml)
+          echo "Current version: $VERSION"
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION"
+
+          if [ "$PATCH" -eq 0 ]; then
+            MINOR=$((MINOR + 1))
+            PATCH=0
+            NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+            sed -i "s|<version>${VERSION}</version>|<version>${NEW_VERSION}</version>|" pom.xml
+            echo "pom_updated=true" >> $GITHUB_ENV
+          else
+            NEW_VERSION="${VERSION}"
+          fi
+
+          echo "NEW_VERSION=$NEW_VERSION" >> $GITHUB_ENV
+          echo "VERSION=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+      - name: Commit updated pom.xml (if changed)
+        if: env.pom_updated == 'true'
+        run: |
+          git add pom.xml
+          git commit -m "chore: bump version to $NEW_VERSION"
+          git push
+
+      - name: Create and push tag
+        run: |
+          git tag "v$NEW_VERSION"
+          git push origin "v$NEW_VERSION"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ steps.version.outputs.VERSION }}
+          name: Release v${{ steps.version.outputs.VERSION }}
+          body: "Auto release triggered from push to master"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
